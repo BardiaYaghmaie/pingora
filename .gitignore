@@ -1,2 +1,7 @@
-/target
-.idea
+__pycache__/
+.venv/
+.idea/
+logs/
+target/
+.env
+*.pdb
