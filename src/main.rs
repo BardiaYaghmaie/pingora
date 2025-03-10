@@ -17,10 +17,17 @@ impl ProxyHttp for LB {
     fn new_ctx(&self) -> Self::CTX {}
 
     async fn upstream_peer(&self, _session: &mut Session, _ctx: &mut ()) -> Result<Box<HttpPeer>> {
-        let upstream = self.lb.select(b"", 256).unwrap();
-        println!("upstream peer is: {:?}", upstream);
-        let peer = Box::new(HttpPeer::new(upstream, true, self.identifier.clone()));
-        Ok(peer)
+        match self.lb.select(b"", 256) {
+            Some(upstream) => {
+                println!("upstream peer is: {:?}", upstream);
+                let peer = Box::new(HttpPeer::new(upstream, true, self.identifier.clone()));
+                Ok(peer)
+            }
+            None => {
+                println!("No healthy upstream servers available");
+                Err(Error::new(Custom("No healthy upstreams available")))
+            }
+        }
     }
 }
 
