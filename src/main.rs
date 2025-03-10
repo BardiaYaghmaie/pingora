@@ -2,8 +2,8 @@ mod settings;
 use settings::Settings;
 
 use async_trait::async_trait;
-use std::{sync::Arc, time::Duration};
 use pingora::prelude::*;
+use std::{sync::Arc, time::Duration};
 
 // LB now carries the load balancer and the identifier from configuration.
 pub struct LB {
@@ -34,13 +34,19 @@ fn main() {
 
     // Create the load balancer using addresses from the configuration.
     let mut upstreams = LoadBalancer::try_from_iter(
-        settings.upstreams.addresses.iter().map(|addr| addr.as_str())
+        settings
+            .upstreams
+            .addresses
+            .iter()
+            .map(|addr| addr.as_str()),
     )
     .unwrap();
 
     let hc = TcpHealthCheck::new();
     upstreams.set_health_check(hc);
-    upstreams.health_check_frequency = Some(Duration::from_secs(settings.upstreams.health_check_frequency));
+    upstreams.health_check_frequency = Some(Duration::from_secs(
+        settings.upstreams.health_check_frequency,
+    ));
     let background = background_service("health check", upstreams);
     let upstreams = background.task();
 
